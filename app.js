@@ -11,7 +11,7 @@ const multerS3 = require('multer-s3'); //"^2.7.0"
 aws.config.update({
     secretAccessKey: process.env.SECRET_ACCESS_KEY,
     accessKeyId: process.env.ACCESS_KEY_ID,
-    region: 'us-east-1'
+    region: process.env.AWS_REGION'
 });
 
 const app = express();
@@ -26,7 +26,7 @@ const upload = multer({
     storage: multerS3({
         s3: s3,
         acl: 'public-read-write',
-        bucket: 'showtimemotorgroup-images',
+        bucket: process.env.S3_BUCKET_NAME,
         key: function (req, file, cb) {
             cb(null, String(Date.now() + '.' + file.originalname.split('.').pop())); //use Date.now() for unique file keys
         }
@@ -61,7 +61,7 @@ app.delete('/', (req, res) => {
     const objects = [];
     for(var k in req.body){
         var params = {
-            Bucket: 'showtimemotorgroup-images',
+            Bucket: process.env.S3_BUCKET_NAME,
             Key: req.body[k]
         }
         try {
@@ -75,7 +75,7 @@ app.delete('/', (req, res) => {
         objects.push({Key: req.body[k]})
     }
     const options = {
-        Bucket: 'showtimemotorgroup-images',
+        Bucket: process.env.S3_BUCKET_NAME,
         Delete: {
             Objects: objects,
             Quiet: false
@@ -89,7 +89,7 @@ app.delete('/', (req, res) => {
     res.send(req.body);
 });
 
-if(process.env.NODE_ENV != "prod" && process.env.NODE_ENV != "dev"){
+if(process.env.NODE_ENV != "production" && process.env.NODE_ENV != "dev"){
     app.listen(3000, () => {
         console.log('Listening on port 3000...');
     });
